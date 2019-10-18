@@ -88,12 +88,21 @@ task preparePackage(dependsOn: ['jlink']) {
     doLast {
         def sourceDir = sourceSets.main.resources.sourceDirectories.asPath
         def projectName = "${project.name}-${version}"
+        def scriptsDirectory = "scripts"
+        def scriptPath = Paths.get(rootDir.absolutePath, scriptsDirectory)
+        def jlinkOutputDir = Paths.get(buildDir.absolutePath, projectName, "bin", scriptsDirectory)
 
         copy {
             from(sourceDir)
             into(Paths.get(buildDir.absolutePath, projectName))
             include "doc/*.md"
             include "*.exe"
+        }
+
+        copy {
+            from(scriptPath)
+            into(jlinkOutputDir)
+            include "*.*"
         }
     }
 }
