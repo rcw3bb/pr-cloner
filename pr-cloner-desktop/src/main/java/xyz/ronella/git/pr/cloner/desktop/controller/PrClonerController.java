@@ -9,6 +9,8 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
+import xyz.ronella.git.pr.cloner.desktop.common.Funxion;
+import xyz.ronella.git.pr.cloner.desktop.function.ViewAboutWindow;
 
 import java.io.*;
 import java.net.URL;
@@ -48,6 +50,11 @@ public class PrClonerController implements Initializable {
     @FXML
     private void mnuOpenAction(ActionEvent event) {
         selectDirectory();
+    }
+
+    @FXML
+    private void mnuAboutAction(ActionEvent event) {
+        Funxion.buildExecutor(new ViewAboutWindow()).execute(mainMenuBar.getScene().getWindow());
     }
 
     private void selectDirectory() {
