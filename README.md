@@ -12,7 +12,7 @@ A simple tool for cloning git pull request.
 1. Run the **pr-cloner.exe**.
 
 2. Expect to the following window:
-	 	![](main-application-window.png)
+	 	![Application Window](main-application-window.png)
 	
 3. Fill-up the **Git Project Directory** field to have the git project.
 
