@@ -1,4 +1,4 @@
-module template.javafx.desktop {
+module git.pr.cloner.desktop {
     requires javafx.controls;
     requires javafx.fxml;
     requires javafx.graphics;

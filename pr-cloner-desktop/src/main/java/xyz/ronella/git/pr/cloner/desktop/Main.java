@@ -5,7 +5,9 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import xyz.ronella.git.pr.cloner.desktop.common.Funxion;
 import xyz.ronella.git.pr.cloner.desktop.common.Images;
+import xyz.ronella.git.pr.cloner.desktop.function.ApplicationTitle;
 
 /**
  * The application entry class.
@@ -21,8 +23,8 @@ public class Main extends Application {
     public void start(Stage primaryStage) throws Exception {
         FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource(MAIN_UI_FILE));
         Parent root = loader.load();
-        primaryStage.setTitle("Pull Request Cloner");
         primaryStage.getIcons().add(Images.ICON);
+        primaryStage.setTitle(Funxion.buildGenerator(new ApplicationTitle()).generate());
         Scene scene = new Scene(root);
         primaryStage.setScene(scene);
         primaryStage.show();
