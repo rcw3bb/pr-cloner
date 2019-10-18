@@ -1,0 +1,3 @@
+rootProject.name = 'pr-cloner'
+
+include 'pr-cloner-desktop'
