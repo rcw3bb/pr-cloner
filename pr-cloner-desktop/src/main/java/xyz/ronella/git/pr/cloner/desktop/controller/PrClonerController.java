@@ -172,26 +172,37 @@ public class PrClonerController implements Initializable {
 
     private void doCloning() {
         disableComponents();
-        File command = new File("scripts/cloner.bat");
-        ProcessBuilder pb = new ProcessBuilder(command.getAbsolutePath(), txtGitProjectDir.getText(), cboRemotes.getValue(), txtPullRequest.getText());
-        try {
-            Process process = pb.start();
-            CompletableFuture<Process> future= process.onExit();
-            int exitValue = future.get().exitValue();
-            if (exitValue==0) {
-                showSuccess();
+        List<File> commands = new ArrayList<>();
+        commands.add(new File("scripts/default-cloner.bat"));
+        commands.add(new File("scripts/bitbucket-cloner.bat"));
+
+        int exitValue = 0;
+
+        for (File command : commands) {
+            ProcessBuilder pb = new ProcessBuilder(command.getAbsolutePath(), txtGitProjectDir.getText(), cboRemotes.getValue(), txtPullRequest.getText());
+            try {
+                Process process = pb.start();
+                CompletableFuture<Process> future = process.onExit();
+                exitValue = future.get().exitValue();
+                if (exitValue==0) {
+                    break;
+                }
+            } catch (IOException e) {
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            } catch (ExecutionException e) {
+                e.printStackTrace();
             }
-            else {
-                showNoSuccess();
-            }
-            enableComponents();
-        } catch (IOException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
         }
+
+        if (exitValue == 0) {
+            showSuccess();
+        } else {
+            showNoSuccess();
+        }
+
+        enableComponents();
     }
 
     @FXML
