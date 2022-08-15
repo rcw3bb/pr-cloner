@@ -1,5 +1,6 @@
 package xyz.ronella.git.pr.cloner.desktop.controller;
 
+import javafx.application.Platform;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
@@ -10,6 +11,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
 import xyz.ronella.git.pr.cloner.desktop.common.Funxion;
+import xyz.ronella.git.pr.cloner.desktop.common.PRConfig;
 import xyz.ronella.git.pr.cloner.desktop.function.ViewAboutWindow;
 
 import java.io.*;
@@ -28,7 +30,7 @@ import java.util.stream.Collectors;
  * @author Ron Webb
  * @since 2019-10-18
  */
-public class PrClonerController implements Initializable {
+public class PRClonerController implements Initializable {
 
     @FXML
     private TextField txtGitProjectDir;
@@ -41,6 +43,15 @@ public class PrClonerController implements Initializable {
 
     @FXML
     private ComboBox<String> cboRemotes;
+
+    @FXML
+    private Button btnClone;
+
+    @FXML
+    private Button btnClose;
+
+    @FXML
+    private Menu mnuFile;
 
     @FXML
     private void mnuCloseAction(ActionEvent event) {
@@ -97,15 +108,21 @@ public class PrClonerController implements Initializable {
     }
 
     private void disableComponents() {
+        mnuFile.disableProperty().set(true);
         txtGitProjectDir.disableProperty().set(true);
         cboRemotes.disableProperty().set(true);
         txtPullRequest.disableProperty().set(true);
+        btnClone.disableProperty().set(true);
+        btnClose.disableProperty().set(true);
     }
 
     private void enableComponents() {
+        mnuFile.disableProperty().set(false);
         txtGitProjectDir.disableProperty().set(false);
         cboRemotes.disableProperty().set(false);
         txtPullRequest.disableProperty().set(false);
+        btnClone.disableProperty().set(false);
+        btnClose.disableProperty().set(false);
     }
 
     @FXML
@@ -172,37 +189,29 @@ public class PrClonerController implements Initializable {
 
     private void doCloning() {
         disableComponents();
-        List<File> commands = new ArrayList<>();
-        commands.add(new File("scripts/default-cloner.bat"));
-        commands.add(new File("scripts/bitbucket-cloner.bat"));
+        final var script = String.format("scripts/%s", PRConfig.INSTANCE.getRepoType().getScript());
+        final var command = new File(script);
 
-        int exitValue = 0;
-
-        for (File command : commands) {
-            ProcessBuilder pb = new ProcessBuilder(command.getAbsolutePath(), txtGitProjectDir.getText(), cboRemotes.getValue(), txtPullRequest.getText());
-            try {
-                Process process = pb.start();
-                CompletableFuture<Process> future = process.onExit();
-                exitValue = future.get().exitValue();
-                if (exitValue==0) {
-                    break;
+        ProcessBuilder pb = new ProcessBuilder(command.getAbsolutePath(), txtGitProjectDir.getText(), cboRemotes.getValue(), txtPullRequest.getText());
+        try {
+            Process process = pb.start();
+            CompletableFuture<Process> future = process.onExit();
+            future.thenAccept(___process -> {
+                if (___process.exitValue() == 0) {
+                    Platform.runLater(() -> {
+                        showSuccess();
+                        enableComponents();
+                    });
+                } else {
+                    Platform.runLater(()-> {
+                        showNoSuccess();
+                        enableComponents();
+                    });
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            }
+            });
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-
-        if (exitValue == 0) {
-            showSuccess();
-        } else {
-            showNoSuccess();
-        }
-
-        enableComponents();
     }
 
     @FXML
