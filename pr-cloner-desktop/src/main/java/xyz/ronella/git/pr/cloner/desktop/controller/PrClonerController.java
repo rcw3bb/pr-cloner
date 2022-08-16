@@ -10,6 +10,7 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
+import xyz.ronella.git.pr.cloner.desktop.common.Colors;
 import xyz.ronella.git.pr.cloner.desktop.common.Funxion;
 import xyz.ronella.git.pr.cloner.desktop.common.PRConfig;
 import xyz.ronella.git.pr.cloner.desktop.function.ViewAboutWindow;
@@ -89,18 +90,15 @@ public class PRClonerController implements Initializable {
         alert.showAndWait();
     }
 
+    private String calcTextBackground(final String color) {
+        return String.format("-fx-control-inner-background: %s", color);
+    }
     private void showSuccess() {
-        Alert alert = new Alert(Alert.AlertType.INFORMATION);
-        alert.setHeaderText("Cloning successful");
-        alert.showAndWait();
+        txtPullRequest.setStyle(calcTextBackground(Colors.LIGHT_GREEN));
     }
-
     private void showNoSuccess() {
-        Alert alert = new Alert(Alert.AlertType.WARNING);
-        alert.setHeaderText("Cloning unsuccessful");
-        alert.showAndWait();
+        txtPullRequest.setStyle(calcTextBackground(Colors.LIGHT_RED));
     }
-
     private void showInvalidGitDir() {
         Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setHeaderText("Not a git project directory");
@@ -147,12 +145,7 @@ public class PRClonerController implements Initializable {
         }
 
         if (errorText == null) {
-            Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
-            alert.setHeaderText("Cloning " + txtPullRequest.getText() + " from " + cboRemotes.getValue() + " to " + txtGitProjectDir.getText());
-            alert.setContentText("Are you sure?");
-            if (alert.showAndWait().get() == ButtonType.OK) {
-                doCloning();
-            }
+            doCloning();
         }
         else {
             showError(errorText);
@@ -191,6 +184,8 @@ public class PRClonerController implements Initializable {
         disableComponents();
         final var script = String.format("scripts/%s", PRConfig.INSTANCE.getRepoType().getScript());
         final var command = new File(script);
+
+        txtPullRequest.setStyle(calcTextBackground(Colors.LIGHT_AMBER));
 
         ProcessBuilder pb = new ProcessBuilder(command.getAbsolutePath(), txtGitProjectDir.getText(), cboRemotes.getValue(), txtPullRequest.getText());
         try {
