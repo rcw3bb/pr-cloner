@@ -1,8 +1,8 @@
 package xyz.ronella.git.pr.cloner.desktop.common.impl;
 
-import org.apache.logging.log4j.LogManager;
+import org.slf4j.LoggerFactory;
 import xyz.ronella.git.pr.cloner.desktop.common.IVersion;
-import xyz.ronella.git.pr.cloner.desktop.common.LoggerPlus;
+import xyz.ronella.logging.LoggerPlus;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -11,7 +11,7 @@ import java.util.ResourceBundle;
 
 public class Version implements IVersion {
 
-    private final static LoggerPlus LOGGER_PLUS = new LoggerPlus(LogManager.getLogger(Version.class));
+    private final static LoggerPlus LOGGER_PLUS = new LoggerPlus(LoggerFactory.getLogger(Version.class));
 
     private ResourceBundle prop;
 

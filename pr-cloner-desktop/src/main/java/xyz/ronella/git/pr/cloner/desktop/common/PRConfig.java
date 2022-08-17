@@ -1,7 +1,7 @@
 package xyz.ronella.git.pr.cloner.desktop.common;
 
-import org.apache.logging.log4j.LogManager;
-import xyz.ronella.git.pr.cloner.desktop.common.impl.Version;
+import org.slf4j.LoggerFactory;
+import xyz.ronella.logging.LoggerPlus;
 
 import java.io.IOException;
 import java.util.Optional;
@@ -14,16 +14,19 @@ final public class PRConfig {
 
     private ResourceBundle prop;
 
-    private final static LoggerPlus LOGGER_PLUS = new LoggerPlus(LogManager.getLogger(PRConfig.class));
-
     private PRConfig() {
-        try {
-            var versionProp = ClassLoader.getSystemResourceAsStream("pr-cloner.properties");
-            if (Optional.ofNullable(versionProp).isPresent()) {
-                this.prop = new PropertyResourceBundle(versionProp);
+        final LoggerPlus LOGGER_PLUS = new LoggerPlus(LoggerFactory.getLogger(PRConfig.class));
+        try(var mLOG = LOGGER_PLUS.groupLog("PRConfig")) {
+            try {
+                final var propFile = "pr-cloner.properties";
+                mLOG.error(()-> "Reading: " + propFile);
+                var versionProp = ClassLoader.getSystemResourceAsStream(propFile);
+                if (Optional.ofNullable(versionProp).isPresent()) {
+                    this.prop = new PropertyResourceBundle(versionProp);
+                }
+            } catch (IOException exp) {
+                mLOG.error(()-> LOGGER_PLUS.getStackTraceAsString(exp));
             }
-        } catch (IOException exp) {
-            LOGGER_PLUS.getLogger().error(LOGGER_PLUS.getStackTraceAsString(exp));
         }
     }
 

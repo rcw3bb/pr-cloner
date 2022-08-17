@@ -5,9 +5,9 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
-import xyz.ronella.git.pr.cloner.desktop.common.Funxion;
 import xyz.ronella.git.pr.cloner.desktop.common.Images;
 import xyz.ronella.git.pr.cloner.desktop.function.ApplicationTitle;
+import xyz.ronella.trivial.command.Invoker;
 
 /**
  * The application entry class.
@@ -24,7 +24,7 @@ public class Main extends Application {
         FXMLLoader loader = new FXMLLoader(getClass().getClassLoader().getResource(MAIN_UI_FILE));
         Parent root = loader.load();
         primaryStage.getIcons().add(Images.ICON);
-        primaryStage.setTitle(Funxion.buildGenerator(new ApplicationTitle()).generate());
+        primaryStage.setTitle(Invoker.generate(new ApplicationTitle()));
         primaryStage.setResizable(false);
         Scene scene = new Scene(root);
         primaryStage.setScene(scene);

@@ -2,7 +2,7 @@ package xyz.ronella.git.pr.cloner.desktop.common;
 
 import javafx.scene.image.Image;
 
-public class Images {
+public final class Images {
 
     private static final String ICON_FILE = "icon.png";
 

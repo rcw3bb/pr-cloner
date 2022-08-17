@@ -10,10 +10,16 @@ import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.Stage;
+import org.slf4j.LoggerFactory;
 import xyz.ronella.git.pr.cloner.desktop.common.Colors;
-import xyz.ronella.git.pr.cloner.desktop.common.Funxion;
 import xyz.ronella.git.pr.cloner.desktop.common.PRConfig;
 import xyz.ronella.git.pr.cloner.desktop.function.ViewAboutWindow;
+import xyz.ronella.logging.LoggerPlus;
+import xyz.ronella.trivial.command.Invoker;
+import xyz.ronella.trivial.decorator.Mutable;
+import xyz.ronella.trivial.handy.CommandRunner;
+import xyz.ronella.trivial.handy.NoCommandException;
+import xyz.ronella.trivial.handy.impl.CommandArray;
 
 import java.io.*;
 import java.net.URL;
@@ -33,6 +39,7 @@ import java.util.stream.Collectors;
  */
 public class PRClonerController implements Initializable {
 
+    private final static LoggerPlus LOGGER_PLUS = new LoggerPlus(LoggerFactory.getLogger(PRClonerController.class));
     @FXML
     private TextField txtGitProjectDir;
 
@@ -66,7 +73,7 @@ public class PRClonerController implements Initializable {
 
     @FXML
     private void mnuAboutAction(ActionEvent event) {
-        Funxion.buildExecutor(new ViewAboutWindow()).execute(mainMenuBar.getScene().getWindow());
+        Invoker.execute(new ViewAboutWindow(),mainMenuBar.getScene().getWindow());
     }
 
     private void selectDirectory() {
@@ -94,10 +101,16 @@ public class PRClonerController implements Initializable {
         return String.format("-fx-control-inner-background: %s", color);
     }
     private void showSuccess() {
-        txtPullRequest.setStyle(calcTextBackground(Colors.LIGHT_GREEN));
+        try(var mLOG = LOGGER_PLUS.groupLog("showSuccess")) {
+            txtPullRequest.setStyle(calcTextBackground(Colors.LIGHT_GREEN));
+            mLOG.debug("Cloning successful.");
+        }
     }
     private void showNoSuccess() {
-        txtPullRequest.setStyle(calcTextBackground(Colors.LIGHT_RED));
+        try(var mLOG = LOGGER_PLUS.groupLog("showNoSuccess")) {
+            txtPullRequest.setStyle(calcTextBackground(Colors.LIGHT_RED));
+            mLOG.debug("Cloning failed.");
+        }
     }
     private void showInvalidGitDir() {
         Alert alert = new Alert(Alert.AlertType.ERROR);
@@ -127,7 +140,6 @@ public class PRClonerController implements Initializable {
     private void btnCloseAction(ActionEvent event) {
         closeApp();
     }
-
     @FXML
     private void btnCloneAction(ActionEvent event) {
         String errorText = null;
@@ -153,8 +165,8 @@ public class PRClonerController implements Initializable {
     }
 
     private List<String> getRemotes() {
-        String projectDir = txtGitProjectDir.getText();
-        List<String> remotes = Collections.emptyList();
+        final String projectDir = txtGitProjectDir.getText();
+        final List<String> remotes = Collections.emptyList();
 
         Path gitDir = Paths.get(projectDir,".git");
         if (gitDir.toFile().exists()) {
@@ -181,34 +193,38 @@ public class PRClonerController implements Initializable {
     }
 
     private void doCloning() {
-        disableComponents();
-        final var script = String.format("scripts/%s", PRConfig.INSTANCE.getRepoType().getScript());
-        final var command = new File(script);
+        try(var mLOG = LOGGER_PLUS.groupLog("doCloning")) {
+            disableComponents();
+            final var script = String.format("scripts/%s", PRConfig.INSTANCE.getRepoType().getScript());
+            final var command = new File(script);
 
-        txtPullRequest.setStyle(calcTextBackground(Colors.LIGHT_AMBER));
+            txtPullRequest.setStyle(calcTextBackground(Colors.LIGHT_AMBER));
 
-        ProcessBuilder pb = new ProcessBuilder(command.getAbsolutePath(), txtGitProjectDir.getText(), cboRemotes.getValue(), txtPullRequest.getText());
-        try {
-            Process process = pb.start();
-            CompletableFuture<Process> future = process.onExit();
-            future.thenAccept(___process -> {
-                if (___process.exitValue() == 0) {
-                    Platform.runLater(() -> {
-                        showSuccess();
-                        enableComponents();
-                    });
-                } else {
-                    Platform.runLater(()-> {
-                        showNoSuccess();
-                        enableComponents();
-                    });
-                }
-            });
-        } catch (IOException e) {
-            e.printStackTrace();
+            ProcessBuilder pb = new ProcessBuilder(command.getAbsolutePath(), txtGitProjectDir.getText(), cboRemotes.getValue(), txtPullRequest.getText());
+
+            mLOG.debug(()-> String.join(" ", pb.command()));
+
+            try {
+                Process process = pb.start();
+                CompletableFuture<Process> future = process.onExit();
+                future.thenAccept(___process -> {
+                    if (___process.exitValue() == 0) {
+                        Platform.runLater(() -> {
+                            showSuccess();
+                            enableComponents();
+                        });
+                    } else {
+                        Platform.runLater(() -> {
+                            showNoSuccess();
+                            enableComponents();
+                        });
+                    }
+                });
+            } catch (IOException e) {
+                mLOG.error(LOGGER_PLUS.getStackTraceAsString(e));
+            }
         }
     }
-
     @FXML
     private void txtGitProjectDirMouseClicked(MouseEvent event) {
         if (event.getButton().equals(MouseButton.PRIMARY) && event.getClickCount()==2) {
