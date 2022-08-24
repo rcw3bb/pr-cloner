@@ -1,16 +1,13 @@
 repositories {
-    maven {
-        url 'https://repo.ronella.xyz/archiva/repository/internal/'
-        credentials {
-            username "${archivaUsername}"
-            password "${archivaPassword}"
-        }
-    }
+    mavenCentral()
     maven {
         url 'https://repo.ronella.xyz/archiva/repository/snapshots/'
         credentials {
             username "${archivaUsername}"
             password "${archivaPassword}"
+        }
+        mavenContent {
+            snapshotsOnly()
         }
     }
 }

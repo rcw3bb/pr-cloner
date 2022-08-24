@@ -15,7 +15,7 @@ apply from: '../common-dependencies.gradle'
 
 dependencies {
     implementation 'xyz.ronella.logging:logger-plus:1.1.1'
-    implementation 'xyz.ronella.casual:trivial-chunk:2.12.0'
+    implementation 'xyz.ronella.casual:trivial-chunk:2.13.1'
 }
 
 sourceSets {
@@ -26,12 +26,15 @@ sourceSets {
     }
 }
 
+application {
+    mainModule = "git.pr.cloner.desktop"
+    mainClass = "xyz.ronella.git.pr.cloner.desktop.Main"
+}
+
 javafx {
     modules = [ 'javafx.controls', 'javafx.fxml' ]
     version = '17'
 }
-
-mainClassName = "$moduleName/xyz.ronella.git.pr.cloner.desktop.Main"
 
 processResources {
     def resources = ['fxml', 'xml', 'png', 'properties']
@@ -80,9 +83,10 @@ jlink {
     options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
     launcher{
         moduleName = 'git.pr.cloner.desktop'
-        mainClassName = 'git.pr.cloner.desktop/xyz.ronella.git.pr.cloner.desktop.Main'
+        mainClassName = 'xyz.ronella.git.pr.cloner.desktop.Main'
+        noConsole = true
     }
-    forceMerge('log4j-api')
+    forceMerge('slf4j-api', 'log4j-api')
     imageName = "${project.name}-${version}"
 }
 
@@ -91,8 +95,12 @@ task preparePackage(dependsOn: ['jlink']) {
         def sourceDir = sourceSets.main.resources.sourceDirectories.asPath
         def projectName = "${project.name}-${version}"
         def scriptsDirectory = "scripts"
+        def confDirectory = "conf"
         def scriptPath = Paths.get(rootDir.absolutePath, scriptsDirectory)
-        def jlinkOutputDir = Paths.get(buildDir.absolutePath, projectName, "bin", scriptsDirectory)
+        def confPath = Paths.get(rootDir.absolutePath, confDirectory)
+        def jlinkBinDir = Paths.get(buildDir.absolutePath, projectName, "bin")
+        def jlinkScriptDir = Paths.get(jlinkBinDir.toFile().absolutePath, scriptsDirectory)
+        def jlinkConfDir = Paths.get(jlinkBinDir.toFile().absolutePath, "..", confDirectory)
 
         copy {
             from(sourceDir)
@@ -102,8 +110,14 @@ task preparePackage(dependsOn: ['jlink']) {
         }
 
         copy {
+            from(confPath)
+            into(jlinkConfDir)
+            include "pr-cloner.*"
+        }
+
+        copy {
             from(scriptPath)
-            into(jlinkOutputDir)
+            into(jlinkScriptDir)
             include "*.*"
         }
     }

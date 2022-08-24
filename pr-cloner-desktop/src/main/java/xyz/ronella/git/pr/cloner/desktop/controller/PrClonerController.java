@@ -16,9 +16,9 @@ import xyz.ronella.git.pr.cloner.desktop.common.PRConfig;
 import xyz.ronella.git.pr.cloner.desktop.function.ViewAboutWindow;
 import xyz.ronella.logging.LoggerPlus;
 import xyz.ronella.trivial.command.Invoker;
-import xyz.ronella.trivial.decorator.Mutable;
 import xyz.ronella.trivial.handy.CommandRunner;
-import xyz.ronella.trivial.handy.NoCommandException;
+import xyz.ronella.trivial.handy.CommandRunnerException;
+import xyz.ronella.trivial.handy.MissingCommandException;
 import xyz.ronella.trivial.handy.impl.CommandArray;
 
 import java.io.*;
@@ -27,9 +27,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.stream.Collectors;
+
 
 /**
  * The controller attached to pr-cloner.fxml.
@@ -166,24 +164,23 @@ public class PRClonerController implements Initializable {
 
     private List<String> getRemotes() {
         final String projectDir = txtGitProjectDir.getText();
-        final List<String> remotes = Collections.emptyList();
+        final var remotes = new ArrayList<String>();
 
         Path gitDir = Paths.get(projectDir,".git");
         if (gitDir.toFile().exists()) {
+            try(var mLOG = LOGGER_PLUS.groupLog("runCommand")) {
+                CommandRunner.runCommand((output, error) -> {
+                    try (BufferedReader br = new BufferedReader(
+                            new InputStreamReader(output, Charset.defaultCharset()))) {
 
-            ProcessBuilder pb = new ProcessBuilder("scripts/remotes.bat", projectDir);
-            try {
-                Process process = pb.start().onExit().get();
-                InputStream is = process.getInputStream();
-                try (BufferedReader br = new BufferedReader(new InputStreamReader(is, Charset.defaultCharset()))) {
-                    return br.lines().sorted(Comparator.naturalOrder()).collect(Collectors.toList());
-                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
+                        remotes.addAll(br.lines().sorted(Comparator.naturalOrder()).toList());
+                    }
+                    catch (IOException ioe) {
+                        mLOG.error(LOGGER_PLUS.getStackTraceAsString(ioe));
+                    }
+                }, CommandArray.getBuilder().addArgs(List.of("scripts/remotes.bat", projectDir)).build());
+            } catch (MissingCommandException mce) {
+                throw new RuntimeException(mce);
             }
         }
         else {
@@ -200,14 +197,16 @@ public class PRClonerController implements Initializable {
 
             txtPullRequest.setStyle(calcTextBackground(Colors.LIGHT_AMBER));
 
-            ProcessBuilder pb = new ProcessBuilder(command.getAbsolutePath(), txtGitProjectDir.getText(), cboRemotes.getValue(), txtPullRequest.getText());
+            final var commandArray = CommandArray.getBuilder()
+                    .setCommand(command.getAbsolutePath())
+                    .addArgs(List.of(txtGitProjectDir.getText(), cboRemotes.getValue(),txtPullRequest.getText()))
+                    .build();
 
-            mLOG.debug(()-> String.join(" ", pb.command()));
+            mLOG.debug(()-> String.join(" ", commandArray.getCommand()));
 
             try {
-                Process process = pb.start();
-                CompletableFuture<Process> future = process.onExit();
-                future.thenAccept(___process -> {
+                final var process = CommandRunner.startProcess(commandArray);
+                process.onExit().thenAccept(___process -> {
                     if (___process.exitValue() == 0) {
                         Platform.runLater(() -> {
                             showSuccess();
@@ -220,7 +219,7 @@ public class PRClonerController implements Initializable {
                         });
                     }
                 });
-            } catch (IOException e) {
+            } catch (MissingCommandException | CommandRunnerException e) {
                 mLOG.error(LOGGER_PLUS.getStackTraceAsString(e));
             }
         }
@@ -245,7 +244,7 @@ public class PRClonerController implements Initializable {
             ObservableList<String> listItems = cboRemotes.getItems();
             listItems.clear();
             if (null != newValue && remotes.size() > 0) {
-                listItems.addAll(remotes.stream().collect(Collectors.toList()));
+                listItems.addAll(remotes.stream().toList());
                 cboRemotes.disableProperty().set(false);
             }
             else {
