@@ -9,22 +9,24 @@ A simple tool for cloning git pull request.
 
 ## Usage
 
-1. Run the **pr-cloner.exe**.
+1. **Navigate** to the **directory** where you've **unzip** the **pr-cloner-desktop-1.1.0-win64.zip file**.
 
-2. Expect the following window:
+2. Run the **pr-cloner.bat**.
+
+3. Expect the following window:
     	![Application Window](main-application-window.png)
 
-3. Fill-up the **Git Project Directory** field to have the git project.
+4. Fill-up the **Git Project Directory** field to have the git project.
 
      > You can **double click** the **Git Project Directory field** to use the **directory explorer** or use the **File -> Git Project Dir** menu.
 
-4. Expect to load all the **remotes attached to the git project** in to the dropdown of the **remote field**.
+5. Expect to load all the **remotes attached to the git project** in to the dropdown of the **remote field**.
 
-5. Select the remote that is **deemed to be the upstream**.
+6. Select the remote that is **deemed to be the upstream**.
 
-6. On the **pull request field** typed in the **pull request number** from the upstream.
+7. On the **pull request field** typed in the **pull request number** from the upstream.
 
-7. Click the **clone button** to clone the pull request.
+8. Click the **clone button** to clone the pull request.
 
      > If successful the Pull Request field will turn to green as follows:
      >
@@ -32,7 +34,7 @@ A simple tool for cloning git pull request.
 
      > If everything is successful, open your **git client** and look for the **local branch name** that has the format **PR<pull request number>**.  You can switch to that branch to review it or do testing on it.
 
-8. Use the **close button** or the **x** at the upper right corner of the window close it.
+9. Use the **close button** or the **x** at the upper right corner of the window close it.
 
 ## Changing the mode
 
@@ -43,7 +45,7 @@ The following are the supported modes:
 | GitHub Repository *(This is the default)* | github    |
 | Bitbucket Repository                      | bitbucket |
 
-1. **Open** the **directory location** of the **pr-cloner.exe**.
+1. **Open** the **directory location** of the **pr-cloner.bat**.
 
 2. **Open** the **conf directory**.
 
