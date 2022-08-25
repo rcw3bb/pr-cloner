@@ -9,20 +9,20 @@ A simple tool for cloning git pull request.
 
 ## Usage
 
-1. **Navigate** to the **directory** where you've **unzip** the **pr-cloner-desktop-1.1.0-win64.zip file**.
+1. **Navigate** to the **directory** where you've **unzip** the **pr-cloner-desktop-1.2.0-GA-win64.zip file**.
 
 2. Run the **pr-cloner.bat**.
 
-3. Expect the following window:
+3. **Expect** something like the following window:
     	![Application Window](main-application-window.png)
 
 4. Fill-up the **Git Project Directory** field to have the git project.
 
      > You can **double click** the **Git Project Directory field** to use the **directory explorer** or use the **File -> Git Project Dir** menu.
 
-5. Expect to load all the **remotes attached to the git project** in to the dropdown of the **remote field**.
+5. **Expect** to load all the **remotes attached to the git project** in to the dropdown of the **remote field**.
 
-6. Select the remote that is **deemed to be the upstream**.
+6. **Select** the remote that is **deemed to be the upstream**.
 
 7. On the **pull request field** typed in the **pull request number** from the upstream.
 
