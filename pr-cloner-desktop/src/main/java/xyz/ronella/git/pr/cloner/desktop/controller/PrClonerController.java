@@ -28,7 +28,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
-
 /**
  * The controller attached to pr-cloner.fxml.
  *
@@ -155,7 +154,10 @@ public class PRClonerController implements Initializable {
         }
 
         if (errorText == null) {
-            doCloning();
+            final var thread = new Thread(this::doCloning);
+            disableComponents();
+            txtPullRequest.setStyle(calcTextBackground(Colors.LIGHT_AMBER));
+            thread.start();
         }
         else {
             showError(errorText);
@@ -189,13 +191,17 @@ public class PRClonerController implements Initializable {
         return remotes;
     }
 
+    private void saveState() {
+        final var state = PRClonerState.getInstance();
+        state.setDirectory(txtGitProjectDir.getText());
+        state.setRemote(cboRemotes.getValue());
+        state.save();
+    }
+
     private void doCloning() {
         try(var mLOG = LOGGER_PLUS.groupLog("doCloning")) {
-            disableComponents();
             final var script = String.format("scripts/%s", PRConfig.INSTANCE.getRepoType().getScript());
             final var command = new File(script);
-
-            txtPullRequest.setStyle(calcTextBackground(Colors.LIGHT_AMBER));
 
             final var commandArray = CommandArray.getBuilder()
                     .setCommand(command.getAbsolutePath())
@@ -208,12 +214,13 @@ public class PRClonerController implements Initializable {
                 final var process = CommandRunner.startProcess(commandArray);
                 process.onExit().thenAccept(___process -> {
                     if (___process.exitValue() == 0) {
-                        Platform.runLater(() -> {
+                        Platform.runLater(()-> {
                             showSuccess();
+                            saveState();
                             enableComponents();
                         });
                     } else {
-                        Platform.runLater(() -> {
+                        Platform.runLater(()-> {
                             showNoSuccess();
                             enableComponents();
                         });
@@ -229,6 +236,13 @@ public class PRClonerController implements Initializable {
         if (event.getButton().equals(MouseButton.PRIMARY) && event.getClickCount()==2) {
             selectDirectory();
         }
+    }
+
+    private void restoreState() {
+        var state = PRClonerState.getInstance();
+        state.restore();
+        txtGitProjectDir.setText(state.getDirectory());
+        cboRemotes.setValue(state.getRemote());
     }
 
     @Override
@@ -251,6 +265,8 @@ public class PRClonerController implements Initializable {
                 cboRemotes.editableProperty().set(true);
             }
         });
+
+        restoreState();
     }
 
 }
