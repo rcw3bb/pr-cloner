@@ -167,26 +167,27 @@ public class PRClonerController implements Initializable {
     private List<String> getRemotes() {
         final String projectDir = txtGitProjectDir.getText();
         final var remotes = new ArrayList<String>();
+        try(var mLOG = LOGGER_PLUS.groupLog("runCommand")) {
+            Path gitDir = Paths.get(projectDir, ".git");
+            if (gitDir.toFile().exists()) {
+                try {
+                    CommandRunner.runCommand((output, error) -> {
+                        try (BufferedReader br = new BufferedReader(
+                                new InputStreamReader(output, Charset.defaultCharset()))) {
 
-        Path gitDir = Paths.get(projectDir,".git");
-        if (gitDir.toFile().exists()) {
-            try(var mLOG = LOGGER_PLUS.groupLog("runCommand")) {
-                CommandRunner.runCommand((output, error) -> {
-                    try (BufferedReader br = new BufferedReader(
-                            new InputStreamReader(output, Charset.defaultCharset()))) {
-
-                        remotes.addAll(br.lines().sorted(Comparator.naturalOrder()).toList());
-                    }
-                    catch (IOException ioe) {
-                        mLOG.error(LOGGER_PLUS.getStackTraceAsString(ioe));
-                    }
-                }, CommandArray.getBuilder().addArgs(List.of("scripts/remotes.bat", projectDir)).build());
-            } catch (MissingCommandException mce) {
-                throw new RuntimeException(mce);
+                            remotes.addAll(br.lines().sorted(Comparator.naturalOrder()).toList());
+                        } catch (IOException ioe) {
+                            mLOG.error(LOGGER_PLUS.getStackTraceAsString(ioe));
+                            throw new RuntimeException(ioe);
+                        }
+                    }, CommandArray.getBuilder().addArgs(List.of("scripts/remotes.bat", projectDir)).build());
+                } catch (MissingCommandException mce) {
+                    mLOG.error(LOGGER_PLUS.getStackTraceAsString(mce));
+                    throw new RuntimeException(mce);
+                }
+            } else {
+                showInvalidGitDir();
             }
-        }
-        else {
-            showInvalidGitDir();
         }
         return remotes;
     }
@@ -239,10 +240,14 @@ public class PRClonerController implements Initializable {
     }
 
     private void restoreState() {
-        var state = PRClonerState.getInstance();
+        final var state = PRClonerState.getInstance();
         state.restore();
-        txtGitProjectDir.setText(state.getDirectory());
-        cboRemotes.setValue(state.getRemote());
+        final var dir = Optional.ofNullable(state.getDirectory());
+        dir.ifPresent(___dir -> {
+            txtGitProjectDir.setText(state.getDirectory());
+            cboRemotes.setValue(state.getRemote());
+            Platform.runLater(() -> txtPullRequest.requestFocus());
+        });
     }
 
     @Override

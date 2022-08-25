@@ -37,6 +37,7 @@ final public class PRConfig {
                 this.prop = new PropertyResourceBundle(versionProp);
             } catch (IOException exp) {
                 mLOG.error(()-> LOGGER_PLUS.getStackTraceAsString(exp));
+                throw new RuntimeException(exp);
             }
         }
     }

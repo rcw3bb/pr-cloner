@@ -1,5 +1,8 @@
 package xyz.ronella.git.pr.cloner.desktop.controller;
 
+import org.slf4j.LoggerFactory;
+import xyz.ronella.logging.LoggerPlus;
+
 import java.io.*;
 import java.nio.file.Paths;
 
@@ -13,7 +16,8 @@ public final class PRClonerState implements Serializable {
 
     @Serial
     private static final long serialVersionUID = -5108020863981919108L;
-    private static final String STATE_DIR = "bin/state";
+    private final static LoggerPlus LOGGER_PLUS = new LoggerPlus(LoggerFactory.getLogger(PRClonerState.class));
+    private static final String STATE_DIR = "state";
     private static final String FILENAME = "PRClonerState.obj";
     private static PRClonerState STATE;
 
@@ -87,23 +91,29 @@ public final class PRClonerState implements Serializable {
 
     public void save() {
         final var filename = getStateFile();
-        try (var objectOutputStream = new ObjectOutputStream(new FileOutputStream(filename.getAbsolutePath()))) {
-            objectOutputStream.writeObject(this);
-            objectOutputStream.flush();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        try(var mLOG = LOGGER_PLUS.groupLog("save")) {
+            try (var objectOutputStream = new ObjectOutputStream(new FileOutputStream(filename.getAbsolutePath()))) {
+                objectOutputStream.writeObject(this);
+                objectOutputStream.flush();
+            } catch (IOException ioException) {
+                mLOG.error(LOGGER_PLUS.getStackTraceAsString(ioException));
+                throw new RuntimeException(ioException);
+            }
         }
     }
 
     public void restore() {
         final var filename = getStateFile();
-        if (filename.exists()) {
-            try (var objectInputStream = new ObjectInputStream(new FileInputStream(filename.getAbsolutePath()))) {
-                final var state = (PRClonerState) objectInputStream.readObject();
-                this.directory = state.directory;
-                this.remote = state.remote;
-            } catch (IOException | ClassNotFoundException e) {
-                throw new RuntimeException(e);
+        try(var mLOG = LOGGER_PLUS.groupLog("restore")) {
+            if (filename.exists()) {
+                try (var objectInputStream = new ObjectInputStream(new FileInputStream(filename.getAbsolutePath()))) {
+                    final var state = (PRClonerState) objectInputStream.readObject();
+                    this.directory = state.directory;
+                    this.remote = state.remote;
+                } catch (IOException | ClassNotFoundException exception) {
+                    mLOG.error(LOGGER_PLUS.getStackTraceAsString(exception));
+                    throw new RuntimeException(exception);
+                }
             }
         }
     }
