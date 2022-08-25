@@ -98,9 +98,13 @@ task preparePackage(dependsOn: ['jlink']) {
         def confDirectory = "conf"
         def scriptPath = Paths.get(rootDir.absolutePath, scriptsDirectory)
         def confPath = Paths.get(rootDir.absolutePath, confDirectory)
-        def jlinkBinDir = Paths.get(buildDir.absolutePath, projectName, "bin")
+        def jlinkTargetDir = Paths.get(buildDir.absolutePath, projectName)
+        def jlinkBinDir = Paths.get(jlinkTargetDir.toFile().absolutePath, "bin")
         def jlinkScriptDir = Paths.get(jlinkBinDir.toFile().absolutePath, scriptsDirectory)
         def jlinkConfDir = Paths.get(jlinkBinDir.toFile().absolutePath, "..", confDirectory)
+        def batchFile = "${project.name}.bat"
+        def batchPath = Paths.get(jlinkTargetDir.toFile().absolutePath, batchFile).toFile()
+        def newFile = Paths.get(jlinkTargetDir.toFile().absolutePath, 'pr-cloner.bat').toFile()
 
         copy {
             from(sourceDir)
@@ -120,6 +124,25 @@ task preparePackage(dependsOn: ['jlink']) {
             into(jlinkScriptDir)
             include "*.*"
         }
+
+        copy {
+            from(Paths.get(buildDir.absolutePath, projectName, "bin"))
+            into(Paths.get(buildDir.absolutePath, projectName))
+            include batchFile
+        }
+
+        if (batchPath.exists()) {
+            def pattern = "set DIR=\"%~dp0\""
+            def replaceWith = "set DIR=\"%~dp0\\bin\""
+            def content = batchPath.text
+            def updatedContent = content.replace(pattern, replaceWith)
+            if (!content.equals(updatedContent)) {
+                batchPath.write(updatedContent)
+            }
+        }
+
+        ant.move(file:"${batchPath.absolutePath}", tofile:"${newFile.absolutePath}")
+
     }
 }
 
