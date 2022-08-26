@@ -14,7 +14,7 @@ A simple tool for cloning git pull request.
 2. Run the **pr-cloner.bat**.
 
 3. **Expect** something like the following window:
-    	![Application Window](main-application-window.png)
+    ![Application Window](main-application-window.png)
 
 4. Fill-up the **Git Project Directory** field to have the git project.
 
@@ -41,7 +41,7 @@ A simple tool for cloning git pull request.
 The following are the supported modes:
 
 | Repository Type                           | Mode      |
-| ----------------------------------------- | --------- |
+|-------------------------------------------|-----------|
 | GitHub Repository *(This is the default)* | github    |
 | Bitbucket Repository                      | bitbucket |
 
