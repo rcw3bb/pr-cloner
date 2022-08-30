@@ -15,7 +15,7 @@ apply from: '../common-dependencies.gradle'
 
 dependencies {
     implementation 'xyz.ronella.logging:logger-plus:1.1.1'
-    implementation 'xyz.ronella.casual:trivial-chunk:2.13.1'
+    implementation 'xyz.ronella.casual:trivial-chunk:2.14.0'
 }
 
 sourceSets {

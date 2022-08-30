@@ -34,9 +34,9 @@ import java.util.*;
  * @author Ron Webb
  * @since 2019-10-18
  */
-public class PRClonerController implements Initializable {
+public class PrClonerController implements Initializable {
 
-    private final static LoggerPlus LOGGER_PLUS = new LoggerPlus(LoggerFactory.getLogger(PRClonerController.class));
+    private final static LoggerPlus LOGGER_PLUS = new LoggerPlus(LoggerFactory.getLogger(PrClonerController.class));
     @FXML
     private TextField txtGitProjectDir;
 

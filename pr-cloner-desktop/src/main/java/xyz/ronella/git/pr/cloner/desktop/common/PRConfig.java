@@ -2,13 +2,12 @@ package xyz.ronella.git.pr.cloner.desktop.common;
 
 import org.slf4j.LoggerFactory;
 import xyz.ronella.logging.LoggerPlus;
+import xyz.ronella.trivial.handy.PathFinder;
 
-import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.Optional;
 import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 
@@ -24,11 +23,7 @@ final public class PRConfig {
             try {
                 final var confName = "pr-cloner.properties";
                 final var locations = List.of("../conf", "conf");
-
-                final var confFound = locations.stream()
-                        .map(___location -> new File(String.format("%s/%s", ___location, confName)))
-                        .filter(File::exists).findFirst();
-
+                final var confFound = PathFinder.getBuilder(confName).addPaths(locations).build().getFile();
                 final var propFile = confFound.get();
 
                 mLOG.debug(()-> "Reading: " + propFile);
