@@ -81,6 +81,11 @@ public class PRClonerController implements Initializable {
 
     @FXML
     private void mnuOpenAction(ActionEvent event) {
+        selectDirectoryAction();
+        event.consume();
+    }
+
+    private void selectDirectoryAction() {
         ProjectDirKeyTypeListener.detachListener(this);
         final var txtProperty = txtGitProjectDir.textProperty();
         final var listener = new ProjectDirActionListener(this);
@@ -91,7 +96,6 @@ public class PRClonerController implements Initializable {
         finally {
             txtProperty.removeListener(listener);
         }
-        event.consume();
     }
 
     @FXML
@@ -230,16 +234,7 @@ public class PRClonerController implements Initializable {
     @FXML
     private void txtGitProjectDirMouseClicked(MouseEvent event) {
         if (event.getButton().equals(MouseButton.PRIMARY) && event.getClickCount()==2) {
-            ProjectDirKeyTypeListener.detachListener(this);
-            final var txtProperty = txtGitProjectDir.textProperty();
-            final var listener = new ProjectDirActionListener(this);
-            try {
-                txtProperty.addListener(listener);
-                selectDirectory();
-            }
-            finally {
-                txtProperty.removeListener(listener);
-            }
+            selectDirectoryAction();
         }
         event.consume();
     }
