@@ -11,6 +11,7 @@ import javafx.scene.control.MenuBar;
 import javafx.scene.control.TextField;
 import javafx.scene.control.Menu;
 import javafx.scene.control.Alert;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.DirectoryChooser;
@@ -40,11 +41,15 @@ import java.util.*;
  * @since 2019-10-18
  */
 @SuppressWarnings("PMD.UnusedPrivateMethod")
-public class PrClonerController implements Initializable {
+public class PRClonerController implements Initializable {
 
-    private final static LoggerPlus LOGGER_PLUS = new LoggerPlus(LoggerFactory.getLogger(PrClonerController.class));
+    private final static LoggerPlus LOGGER_PLUS = new LoggerPlus(LoggerFactory.getLogger(PRClonerController.class));
+
+    /**
+     * The text field for the GIT project directory.
+     */
     @FXML
-    private TextField txtGitProjectDir;
+    TextField txtGitProjectDir;
 
     @FXML
     private TextField txtPullRequest;
@@ -67,7 +72,7 @@ public class PrClonerController implements Initializable {
     /**
      * Constructor for the PrClonerController class.
      */
-    public PrClonerController() {}
+    public PRClonerController() {}
 
     @FXML
     private void mnuCloseAction(ActionEvent event) {
@@ -76,7 +81,17 @@ public class PrClonerController implements Initializable {
 
     @FXML
     private void mnuOpenAction(ActionEvent event) {
-        selectDirectory();
+        ProjectDirKeyTypeListener.detachListener(this);
+        final var txtProperty = txtGitProjectDir.textProperty();
+        final var listener = new ProjectDirActionListener(this);
+        try {
+            txtProperty.addListener(listener);
+            selectDirectory();
+        }
+        finally {
+            txtProperty.removeListener(listener);
+        }
+        event.consume();
     }
 
     @FXML
@@ -119,11 +134,6 @@ public class PrClonerController implements Initializable {
             txtPullRequest.setStyle(calcTextBackground(Colors.LIGHT_RED));
             mLOG.debug("Cloning failed.");
         }
-    }
-    private void showInvalidGitDir() {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
-        alert.setHeaderText("Not a git project directory");
-        alert.showAndWait();
     }
 
     private void disableComponents() {
@@ -175,34 +185,6 @@ public class PrClonerController implements Initializable {
         }
     }
 
-    private List<String> getRemotes() {
-        final String projectDir = txtGitProjectDir.getText();
-        final var remotes = new ArrayList<String>();
-        try(var mLOG = LOGGER_PLUS.groupLog("runCommand")) {
-            Path gitDir = Paths.get(projectDir, ".git");
-            if (gitDir.toFile().exists()) {
-                final var remoteBatch = PathFinder.getBuilder("remotes.bat").addPaths("scripts").build().getFile();
-
-                remoteBatch.ifPresentOrElse(___remoteBatch -> {
-
-                    CommandProcessor.process(CommandProcessor.ProcessOutputHandler.captureStreams((output, error) -> {
-                        try (BufferedReader br = new BufferedReader(new InputStreamReader(output, StandardCharsets.UTF_8))) {
-                            remotes.addAll(br.lines().sorted(Comparator.naturalOrder()).toList());
-                        } catch (IOException ioe) {
-                            mLOG.error(LOGGER_PLUS.getStackTraceAsString(ioe));
-                            throw new RuntimeException(ioe);
-                        }
-                    }), CommandArray.getBuilder().addArgs(List.of("./scripts/remotes.bat", projectDir)).build());
-
-                }, () -> mLOG.error("Remote batch file not found."));
-
-            } else {
-                showInvalidGitDir();
-            }
-        }
-        return remotes;
-    }
-
     private void saveState() {
         final var state = PRClonerState.getInstance();
         state.setDirectory(txtGitProjectDir.getText());
@@ -248,8 +230,86 @@ public class PrClonerController implements Initializable {
     @FXML
     private void txtGitProjectDirMouseClicked(MouseEvent event) {
         if (event.getButton().equals(MouseButton.PRIMARY) && event.getClickCount()==2) {
-            selectDirectory();
+            ProjectDirKeyTypeListener.detachListener(this);
+            final var txtProperty = txtGitProjectDir.textProperty();
+            final var listener = new ProjectDirActionListener(this);
+            try {
+                txtProperty.addListener(listener);
+                selectDirectory();
+            }
+            finally {
+                txtProperty.removeListener(listener);
+            }
         }
+        event.consume();
+    }
+
+    private void showInvalidGitDir() {
+        cboRemotes.getItems().clear();
+        cboRemotes.disableProperty().set(true);
+        Alert alert = new Alert(Alert.AlertType.ERROR);
+        alert.setHeaderText("Not a git project directory");
+        alert.showAndWait();
+    }
+
+    private List<String> getRemotes() {
+        final String projectDir = txtGitProjectDir.getText();
+        final var remotes = new ArrayList<String>();
+
+        try (var mLOG = LOGGER_PLUS.groupLog("runCommand")) {
+            Path gitDir = Paths.get(projectDir, ".git");
+            if (gitDir.toFile().exists()) {
+                final var remoteBatch = PathFinder.getBuilder("remotes.bat").addPaths("scripts").build().getFile();
+
+                remoteBatch.ifPresentOrElse(___remoteBatch -> {
+
+                    CommandProcessor.process(CommandProcessor.ProcessOutputHandler.captureStreams((output, error) -> {
+                        try (BufferedReader br = new BufferedReader(new InputStreamReader(output, StandardCharsets.UTF_8))) {
+                            remotes.addAll(br.lines().sorted(Comparator.naturalOrder()).toList());
+                        } catch (IOException ioe) {
+                            mLOG.error(LOGGER_PLUS.getStackTraceAsString(ioe));
+                            throw new RuntimeException(ioe);
+                        }
+                    }), CommandArray.getBuilder().addArgs(List.of("./scripts/remotes.bat", projectDir)).build());
+
+                }, () -> mLOG.error("Remote batch file not found."));
+
+            } else {
+                showInvalidGitDir();
+            }
+        }
+
+        return remotes;
+    }
+
+    /**
+     * Updates the ComboBox with the list of Git remotes.
+     */
+    public void updateCBORemotes() {
+        if (!txtGitProjectDir.getText().isEmpty()) {
+            List<String> remotes = getRemotes();
+            ObservableList<String> listItems = cboRemotes.getItems();
+            listItems.clear();
+            if (!remotes.isEmpty()) {
+                listItems.addAll(remotes.stream().toList());
+                cboRemotes.disableProperty().set(false);
+            } else {
+                cboRemotes.editableProperty().set(true);
+            }
+        }
+    }
+
+    @FXML
+    private void txtGitProjectDirAction(ActionEvent event) {
+        ProjectDirKeyTypeListener.detachListener(this);
+        updateCBORemotes();
+        event.consume();
+    }
+
+    @FXML
+    private void txtGitProjectDirKeyTyped(KeyEvent event) {
+        ProjectDirKeyTypeListener.attachListener(this);
+        event.consume();
     }
 
     private void restoreState() {
@@ -265,22 +325,10 @@ public class PrClonerController implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+
         txtPullRequest.textProperty().addListener((observable, oldValue, newValue) -> {
             if (!newValue.matches("\\d*")) {
                 txtPullRequest.setText(newValue.replaceAll("[^\\d]", ""));
-            }
-        });
-
-        txtGitProjectDir.textProperty().addListener((observable, oldValue, newValue) -> {
-            List<String> remotes = getRemotes();
-            ObservableList<String> listItems = cboRemotes.getItems();
-            listItems.clear();
-            if (null != newValue && remotes.size() > 0) {
-                listItems.addAll(remotes.stream().toList());
-                cboRemotes.disableProperty().set(false);
-            }
-            else {
-                cboRemotes.editableProperty().set(true);
             }
         });
 
