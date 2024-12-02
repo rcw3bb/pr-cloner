@@ -8,6 +8,8 @@ package xyz.ronella.git.pr.cloner.desktop.common;
  */
 final public class Colors {
 
+    private Colors() {}
+
     /**
      * The color of success.
      */

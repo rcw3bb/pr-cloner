@@ -1,3 +1,11 @@
+dependencyResolutionManagement {
+    versionCatalogs {
+        testLibs {
+            from(files('gradle/test-libs.versions.toml'))
+        }
+    }
+}
+
 rootProject.name = 'pr-cloner'
 
 include 'pr-cloner-desktop'

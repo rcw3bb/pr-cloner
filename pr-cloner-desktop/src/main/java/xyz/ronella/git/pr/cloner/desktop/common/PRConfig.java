@@ -6,17 +6,28 @@ import xyz.ronella.trivial.handy.PathFinder;
 
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import java.util.PropertyResourceBundle;
 import java.util.ResourceBundle;
 
+/**
+ * Singleton class for managing PR configuration.
+ *
+ * @author Ron Webb
+ */
 final public class PRConfig {
 
+    /**
+     * The single instance of PRConfig.
+     */
     public final static PRConfig INSTANCE = new PRConfig();
 
     private ResourceBundle prop;
 
+    /**
+     * Private constructor to initialize the configuration.
+     * Loads properties from the 'pr-cloner.properties' file located in either '../conf' or 'conf' directories.
+     */
     private PRConfig() {
         final LoggerPlus LOGGER_PLUS = new LoggerPlus(LoggerFactory.getLogger(PRConfig.class));
         try(var mLOG = LOGGER_PLUS.groupLog("PRConfig")) {
@@ -24,12 +35,14 @@ final public class PRConfig {
                 final var confName = "pr-cloner.properties";
                 final var locations = List.of("../conf", "conf");
                 final var confFound = PathFinder.getBuilder(confName).addPaths(locations).build().getFile();
+
                 final var propFile = confFound.get();
 
                 mLOG.debug(()-> "Reading: " + propFile);
 
-                final InputStream versionProp = new FileInputStream(propFile);
-                this.prop = new PropertyResourceBundle(versionProp);
+                try (var versionProp = new FileInputStream(propFile)) {
+                    this.prop = new PropertyResourceBundle(versionProp);
+                }
             } catch (IOException exp) {
                 mLOG.error(()-> LOGGER_PLUS.getStackTraceAsString(exp));
                 throw new RuntimeException(exp);
@@ -37,6 +50,11 @@ final public class PRConfig {
         }
     }
 
+    /**
+     * Retrieves the repository type from the configuration.
+     *
+     * @return The repository type as a RepoType enum.
+     */
     public RepoType getRepoType() {
         final var repoType = prop.getString("repoType");
         return RepoType.getEnum(repoType);

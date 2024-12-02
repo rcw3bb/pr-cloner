@@ -9,17 +9,39 @@ import javafx.stage.Stage;
 import java.net.URL;
 import java.util.ResourceBundle;
 
+/**
+ * Controller class for the About dialog.
+ *
+ * @author Ron Webb
+ */
+@SuppressWarnings("PMD.UnusedPrivateMethod")
 public class AboutController implements Initializable {
 
     @FXML
     private Button btnClose;
 
+    /**
+     * Constructor for the AboutController class.
+     */
+    public AboutController() {}
+
+    /**
+     * Handles the action event for the close button.
+     *
+     * @param event The action event triggered by the close button.
+     */
     @FXML
     private void btnCloseAction(ActionEvent event) {
         Stage stage = (Stage) btnClose.getScene().getWindow();
         stage.close();
     }
 
+    /**
+     * Initializes the controller class.
+     *
+     * @param location  The location used to resolve relative paths for the root object, or null if the location is not known.
+     * @param resources The resources used to localize the root object, or null if the root object was not localized.
+     */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
     }

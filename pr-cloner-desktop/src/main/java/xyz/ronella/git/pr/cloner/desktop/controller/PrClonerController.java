@@ -5,7 +5,12 @@ import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.TextField;
+import javafx.scene.control.Menu;
+import javafx.scene.control.Alert;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.DirectoryChooser;
@@ -13,17 +18,17 @@ import javafx.stage.Stage;
 import org.slf4j.LoggerFactory;
 import xyz.ronella.git.pr.cloner.desktop.common.Colors;
 import xyz.ronella.git.pr.cloner.desktop.common.PRConfig;
+import xyz.ronella.git.pr.cloner.desktop.function.Invoker;
 import xyz.ronella.git.pr.cloner.desktop.function.ViewAboutWindow;
 import xyz.ronella.logging.LoggerPlus;
-import xyz.ronella.trivial.command.Invoker;
-import xyz.ronella.trivial.handy.CommandRunner;
-import xyz.ronella.trivial.handy.CommandRunnerException;
-import xyz.ronella.trivial.handy.MissingCommandException;
+import xyz.ronella.trivial.handy.CommandProcessor;
+import xyz.ronella.trivial.handy.CommandProcessorException;
+import xyz.ronella.trivial.handy.PathFinder;
 import xyz.ronella.trivial.handy.impl.CommandArray;
 
 import java.io.*;
 import java.net.URL;
-import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
@@ -34,6 +39,7 @@ import java.util.*;
  * @author Ron Webb
  * @since 2019-10-18
  */
+@SuppressWarnings("PMD.UnusedPrivateMethod")
 public class PrClonerController implements Initializable {
 
     private final static LoggerPlus LOGGER_PLUS = new LoggerPlus(LoggerFactory.getLogger(PrClonerController.class));
@@ -57,6 +63,11 @@ public class PrClonerController implements Initializable {
 
     @FXML
     private Menu mnuFile;
+
+    /**
+     * Constructor for the PrClonerController class.
+     */
+    public PrClonerController() {}
 
     @FXML
     private void mnuCloseAction(ActionEvent event) {
@@ -170,21 +181,21 @@ public class PrClonerController implements Initializable {
         try(var mLOG = LOGGER_PLUS.groupLog("runCommand")) {
             Path gitDir = Paths.get(projectDir, ".git");
             if (gitDir.toFile().exists()) {
-                try {
-                    CommandRunner.runCommand((output, error) -> {
-                        try (BufferedReader br = new BufferedReader(
-                                new InputStreamReader(output, Charset.defaultCharset()))) {
+                final var remoteBatch = PathFinder.getBuilder("remotes.bat").addPaths("scripts").build().getFile();
 
+                remoteBatch.ifPresentOrElse(___remoteBatch -> {
+
+                    CommandProcessor.process(CommandProcessor.ProcessOutputHandler.captureStreams((output, error) -> {
+                        try (BufferedReader br = new BufferedReader(new InputStreamReader(output, StandardCharsets.UTF_8))) {
                             remotes.addAll(br.lines().sorted(Comparator.naturalOrder()).toList());
                         } catch (IOException ioe) {
                             mLOG.error(LOGGER_PLUS.getStackTraceAsString(ioe));
                             throw new RuntimeException(ioe);
                         }
-                    }, CommandArray.getBuilder().addArgs(List.of("scripts/remotes.bat", projectDir)).build());
-                } catch (MissingCommandException mce) {
-                    mLOG.error(LOGGER_PLUS.getStackTraceAsString(mce));
-                    throw new RuntimeException(mce);
-                }
+                    }), CommandArray.getBuilder().addArgs(List.of("./scripts/remotes.bat", projectDir)).build());
+
+                }, () -> mLOG.error("Remote batch file not found."));
+
             } else {
                 showInvalidGitDir();
             }
@@ -212,22 +223,24 @@ public class PrClonerController implements Initializable {
             mLOG.debug(()-> String.join(" ", commandArray.getCommand()));
 
             try {
-                final var process = CommandRunner.startProcess(commandArray);
-                process.onExit().thenAccept(___process -> {
-                    if (___process.exitValue() == 0) {
-                        Platform.runLater(()-> {
-                            showSuccess();
-                            saveState();
-                            enableComponents();
-                        });
-                    } else {
-                        Platform.runLater(()-> {
-                            showNoSuccess();
-                            enableComponents();
-                        });
-                    }
-                });
-            } catch (MissingCommandException | CommandRunnerException e) {
+                CommandProcessor.process((___process) -> {
+                    ___process.onExit().thenAccept(____process -> {
+                        if (____process.exitValue() == 0) {
+                            Platform.runLater(()-> {
+                                showSuccess();
+                                saveState();
+                                enableComponents();
+                            });
+                        } else {
+                            Platform.runLater(()-> {
+                                showNoSuccess();
+                                enableComponents();
+                            });
+                        }
+                    });
+                    }, commandArray);
+
+            } catch (CommandProcessorException e) {
                 mLOG.error(LOGGER_PLUS.getStackTraceAsString(e));
             }
         }

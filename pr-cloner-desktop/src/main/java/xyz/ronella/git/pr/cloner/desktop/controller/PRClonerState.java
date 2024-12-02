@@ -33,6 +33,12 @@ public final class PRClonerState implements Serializable {
         return STATE;
     }
 
+    /**
+     * Retrieves the state directory file.
+     * Creates the directory if it does not exist.
+     *
+     * @return The state directory file.
+     */
     private static File getStateDir() {
         final var stateDirFile = new File(STATE_DIR);
         if (!stateDirFile.exists()) {
@@ -41,6 +47,11 @@ public final class PRClonerState implements Serializable {
         return stateDirFile;
     }
 
+    /**
+     * Retrieves the state file.
+     *
+     * @return The state file.
+     */
     private static File getStateFile() {
         return Paths.get(getStateDir().getAbsolutePath(), FILENAME).toFile();
     }
@@ -58,7 +69,8 @@ public final class PRClonerState implements Serializable {
     private String remote;
 
     /**
-     * The directory.
+     * Retrieves the directory.
+     *
      * @return The directory.
      */
     public String getDirectory() {
@@ -66,15 +78,17 @@ public final class PRClonerState implements Serializable {
     }
 
     /**
-     * The selected remote.
-     * @return
+     * Retrieves the selected remote.
+     *
+     * @return The selected remote.
      */
     public String getRemote() {
         return remote;
     }
 
     /**
-     * Capture the directory.
+     * Sets the directory.
+     *
      * @param directory The directory.
      */
     public void setDirectory(String directory) {
@@ -82,19 +96,23 @@ public final class PRClonerState implements Serializable {
     }
 
     /**
-     * Capture the remote.
+     * Sets the remote.
+     *
      * @param remote The remote.
      */
     public void setRemote(String remote) {
         this.remote = remote;
     }
 
+    /**
+     * Saves the current state to a file.
+     */
     public void save() {
         final var filename = getStateFile();
         try(var mLOG = LOGGER_PLUS.groupLog("save")) {
-            try (var objectOutputStream = new ObjectOutputStream(new FileOutputStream(filename.getAbsolutePath()))) {
-                objectOutputStream.writeObject(this);
-                objectOutputStream.flush();
+            try (var objOutputStream = new ObjectOutputStream(new FileOutputStream(filename.getAbsolutePath()))) {
+                objOutputStream.writeObject(this);
+                objOutputStream.flush();
             } catch (IOException ioException) {
                 mLOG.error(LOGGER_PLUS.getStackTraceAsString(ioException));
                 throw new RuntimeException(ioException);
@@ -102,6 +120,9 @@ public final class PRClonerState implements Serializable {
         }
     }
 
+    /**
+     * Restores the state from a file.
+     */
     public void restore() {
         final var filename = getStateFile();
         try(var mLOG = LOGGER_PLUS.groupLog("restore")) {

@@ -1,0 +1,23 @@
+buildscript {
+    configurations.classpath {
+        resolutionStrategy.activateDependencyLocking()
+    }
+}
+
+plugins {
+    //alias(libs.plugins.snyk)
+}
+
+dependencyLocking {
+    lockAllConfigurations()
+}
+
+/*
+snyk {
+    arguments = '--all-sub-projects'
+    severity = 'low'
+    api = "${snykToken}"
+    autoDownload = true
+    autoUpdate = true
+}
+*/

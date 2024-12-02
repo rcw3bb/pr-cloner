@@ -1,0 +1,60 @@
+configurations {
+    mockitoAgent
+    pmdTool
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation libs.bundles.logger
+    implementation libs.trivial.chunk
+
+    testImplementation testLibs.bundles.unit.test
+    mockitoAgent(testLibs.mockito.core) {
+        transitive = false
+    }
+
+    pmdTool libs.pmd //This must be the only dependency attached to the pmdTool configuration.
+}
+
+group 'xyz.ronella.template'
+version VERSION
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_21
+    targetCompatibility = JavaVersion.VERSION_21
+    withJavadocJar()
+    withSourcesJar()
+}
+
+test {
+    jvmArgs("-javaagent:${configurations.mockitoAgent.asPath}")
+    useJUnitPlatform()
+}
+
+task testsJar(type: Jar, dependsOn: [testClasses]) {
+    archiveClassifier.set('tests')
+    from sourceSets.test.output
+}
+
+jar {
+    duplicatesStrategy = DuplicatesStrategy.INHERIT
+    manifest {
+        attributes(
+                "Implementation-Title": project.name,
+                "Implementation-Version": project.version
+        )
+    }
+    dependsOn(test)
+    finalizedBy(javadocJar, sourcesJar, testsJar)
+}
+
+javadoc {
+    if(JavaVersion.current().isJava9Compatible()) {
+        options.addBooleanOption('html5', true)
+    }
+}
+
+
