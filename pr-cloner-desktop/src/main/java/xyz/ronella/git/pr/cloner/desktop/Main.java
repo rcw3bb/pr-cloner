@@ -5,9 +5,12 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
+import org.slf4j.LoggerFactory;
 import xyz.ronella.git.pr.cloner.desktop.common.Images;
 import xyz.ronella.git.pr.cloner.desktop.function.ApplicationTitle;
 import xyz.ronella.git.pr.cloner.desktop.function.Invoker;
+import xyz.ronella.git.pr.cloner.desktop.util.AppInfo;
+import xyz.ronella.logging.LoggerPlus;
 import xyz.ronella.trivial.handy.PathFinder;
 
 /**
@@ -36,6 +39,7 @@ public class Main extends Application {
     }
 
     private static final String MAIN_UI_FILE = "pr-cloner.fxml";
+    private final static LoggerPlus LOGGER = new LoggerPlus(LoggerFactory.getLogger(Main.class));
 
     /**
      * Constructor for the Main class.
@@ -59,6 +63,17 @@ public class Main extends Application {
      * @param args The command line arguments.
      */
     public static void main(String[] args) {
-        launch(args);
+        try (var mLOG = LOGGER.groupLog("main")) {
+            final var appInfo = AppInfo.INSTANCE;
+            final var header = String.format("%s v%s (%s)"
+                    , appInfo.getAppName()
+                    , appInfo.getAppVersion()
+                    , appInfo.getBuildDate()
+            );
+            mLOG.info(header);
+            mLOG.info("Working Directory: %s", System.getProperty("user.dir"));
+
+            launch(args);
+        }
     }
 }
