@@ -5,3 +5,4 @@ build/
 logs/
 bin/
 state/PRClonerState.obj
+pr-cloner-desktop/state/
