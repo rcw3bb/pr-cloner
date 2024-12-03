@@ -9,7 +9,7 @@ import java.util.Optional;
  * Updates the ComboBox with the list of Git remotes.
  *
  * @author Ron Webb
- * @since 1.3.0
+ * @since 1.2.1
  */
 public class ProjectDirActionListener implements ChangeListener<String> {
 

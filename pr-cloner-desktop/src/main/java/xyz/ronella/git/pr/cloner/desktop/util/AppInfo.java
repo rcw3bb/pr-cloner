@@ -12,7 +12,7 @@ import java.util.ResourceBundle;
  * The AppInfo class is the class that provides the application information.
  *
  * @author Ron Webb
- * @since 1.3.0
+ * @since 1.2.1
  */
 final public class AppInfo {
 

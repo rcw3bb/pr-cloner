@@ -8,7 +8,7 @@ import javafx.beans.value.ObservableValue;
  * Updates the ComboBox with the list of Git remotes when the TextField loses focus.
  *
  * @author Ron Webb
- * @since 1.3.0
+ * @since 1.2.1
  */
 public class ProjectDirKeyTypeListener implements ChangeListener<Boolean> {
 
