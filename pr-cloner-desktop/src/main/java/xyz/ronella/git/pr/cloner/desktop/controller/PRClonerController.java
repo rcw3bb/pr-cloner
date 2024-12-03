@@ -196,9 +196,15 @@ public class PRClonerController implements Initializable {
         state.save();
     }
 
+    private String getScriptDir() {
+        return PathFinder.getBuilder("scripts").addPaths("../").build().getFile().orElse(new File("."))
+                .getAbsolutePath();
+    }
+
     private void doCloning() {
         try(var mLOG = LOGGER_PLUS.groupLog("doCloning")) {
-            final var script = String.format("scripts/%s", PRConfig.INSTANCE.getRepoType().getScript());
+            final var script = String.format("%s/%s", getScriptDir(),
+                    PRConfig.INSTANCE.getRepoType().getScript());
             final var command = new File(script);
 
             final var commandArray = CommandArray.getBuilder()
@@ -254,20 +260,27 @@ public class PRClonerController implements Initializable {
         try (var mLOG = LOGGER_PLUS.groupLog("runCommand")) {
             Path gitDir = Paths.get(projectDir, ".git");
             if (gitDir.toFile().exists()) {
-                final var remoteBatch = PathFinder.getBuilder("remotes.bat").addPaths("scripts").build().getFile();
+                final var remoteBatch = PathFinder.getBuilder("remotes.bat")
+                        .addPaths(getScriptDir()).build().getFile();
 
                 remoteBatch.ifPresentOrElse(___remoteBatch -> {
 
-                    CommandProcessor.process(CommandProcessor.ProcessOutputHandler.captureStreams((output, error) -> {
-                        try (BufferedReader br = new BufferedReader(new InputStreamReader(output, StandardCharsets.UTF_8))) {
-                            remotes.addAll(br.lines().sorted(Comparator.naturalOrder()).toList());
-                        } catch (IOException ioe) {
-                            mLOG.error(LOGGER_PLUS.getStackTraceAsString(ioe));
-                            throw new RuntimeException(ioe);
-                        }
-                    }), CommandArray.getBuilder().addArgs(List.of("./scripts/remotes.bat", projectDir)).build());
+                    CommandProcessor.process(CommandProcessor.ProcessOutputHandler
+                            .captureStreams((output, error) -> {
+                                try (BufferedReader br = new BufferedReader(
+                                        new InputStreamReader(output, StandardCharsets.UTF_8))
+                                ) {
+                                    remotes.addAll(br.lines().sorted(Comparator.naturalOrder()).toList());
+                                } catch (IOException ioe) {
+                                    mLOG.error(LOGGER_PLUS.getStackTraceAsString(ioe));
+                                    throw new RuntimeException(ioe);
+                                }
+                            }),
 
-                }, () -> mLOG.error("Remote batch file not found."));
+                            CommandArray.getBuilder().addArgs(List.of(___remoteBatch.getAbsolutePath(), projectDir))
+                                    .build());
+
+                    }, () -> mLOG.error("Remote batch file not found."));
 
             } else {
                 showInvalidGitDir();
