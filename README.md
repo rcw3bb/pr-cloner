@@ -9,17 +9,13 @@ A simple tool for cloning git pull request.
 
 ## Usage
 
-1. **Navigate** to the **directory** where you've **unzip** the **pr-cloner-desktop-1.2.0-GA-win64.zip file**.
+1. **Navigate** to the **directory** where you've **unzip** the **pr-cloner-desktop-1.2.1-win64.zip file**.
 
 2. Run the **pr-cloner.bat**.
 
 3. **Expect** something like the following window:
-
-
-    
+   
     ![Application Window](main-application-window.png)
-
-    
 
 4. Fill-up the **Git Project Directory** field to have the git project.
 
