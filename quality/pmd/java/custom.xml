@@ -7,30 +7,58 @@
         Best Practices
     </description>
 
-    <rule ref="category/java/design.xml/CyclomaticComplexity" />
-    <rule ref="category/java/design.xml/GodClass" />
+    <rule ref="category/java/bestpractices.xml" >
+        <exclude name="GuardLogStatement"/>
+    </rule>
+    <rule ref="category/java/codestyle.xml" >
+        <exclude name="FormalParameterNamingConventions"/>
+        <exclude name="LinguisticNaming"/>
+        <exclude name="GenericsNaming"/>
+        <exclude name="UnnecessaryConstructor"/>
+        <exclude name="ShortClassName"/>
+        <exclude name="UseExplicitTypes"/>
+    </rule>
+    <rule ref="category/java/design.xml" >
+        <exclude name="LawOfDemeter"/>
+        <exclude name="LoosePackageCoupling"/>
+        <exclude name="DataClass"/>
+    </rule>
+    <rule ref="category/java/design.xml/TooManyMethods">
+        <properties>
+            <property name="maxmethods" value="20" />
+        </properties>
+    </rule>
     <rule ref="category/java/design.xml/NcssCount">
         <properties>
             <property name="methodReportLevel" value="30" />
-            <property name="classReportLevel" value="1500" />
-            <property name="ncssOptions" value="" />
+            <property name="classReportLevel" value="500" />
         </properties>
     </rule>
-    <rule ref="category/java/errorprone.xml" />
-    <rule ref="category/java/bestpractices.xml/AvoidPrintStackTrace" />
-    <rule ref="category/java/bestpractices.xml/LooseCoupling" />
-    <rule ref="category/java/bestpractices.xml/UnusedPrivateMethod"/>
-    <rule ref="category/java/bestpractices.xml/UnusedLocalVariable"/>
-    <rule ref="category/java/bestpractices.xml/UnusedPrivateField"/>
-    <rule ref="category/java/codestyle.xml/UnnecessaryImport" />
-    <rule ref="category/java/codestyle.xml/LongVariable">
+    <rule ref="category/java/design.xml/ExcessiveParameterList">
         <properties>
-            <property name="minimum" value="17" />
+            <property name="minimum" value="5" />
         </properties>
+    </rule>
+    <rule ref="category/java/documentation.xml">
+        <exclude name="CommentSize"/>
     </rule>
     <rule ref="category/java/documentation.xml/CommentRequired">
         <properties>
-            <property name="fieldCommentRequirement" value="Ignored"/>
+            <property name="methodWithOverrideCommentRequirement" value="Ignored" />
+            <property name="accessorCommentRequirement" value="Ignored" />
+            <property name="classCommentRequirement" value="Required" />
+            <property name="fieldCommentRequirement" value="Ignored" />
+            <property name="publicMethodCommentRequirement" value="Required" />
+            <property name="protectedMethodCommentRequirement" value="Required" />
+            <property name="enumCommentRequirement" value="Required" />
+            <property name="serialVersionUIDCommentRequired" value="Ignored" />
+            <property name="serialPersistentFieldsCommentRequired" value="Ignored" />
         </properties>
     </rule>
+    <rule ref="category/java/errorprone.xml">
+        <exclude name="NonSerializableClass"/>
+    </rule>
+    <rule ref="category/java/multithreading.xml" />
+    <rule ref="category/java/performance.xml" />
+    <rule ref="category/java/security.xml" />
 </ruleset>

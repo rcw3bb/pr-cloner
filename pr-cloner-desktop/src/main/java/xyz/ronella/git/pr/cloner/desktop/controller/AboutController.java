@@ -21,9 +21,11 @@ public class AboutController implements Initializable {
     private Button btnClose;
 
     /**
-     * Constructor for the AboutController class.
+     * Constructs an AboutController.
      */
-    public AboutController() {}
+    public AboutController() {
+        super();
+    }
 
     /**
      * Handles the action event for the close button.
@@ -31,8 +33,9 @@ public class AboutController implements Initializable {
      * @param event The action event triggered by the close button.
      */
     @FXML
+    @SuppressWarnings("PMD.UnusedFormalParameter")
     private void btnCloseAction(ActionEvent event) {
-        Stage stage = (Stage) btnClose.getScene().getWindow();
+        final Stage stage = (Stage) btnClose.getScene().getWindow();
         stage.close();
     }
 
@@ -44,5 +47,6 @@ public class AboutController implements Initializable {
      */
     @Override
     public void initialize(URL location, ResourceBundle resources) {
+        // Do nothing
     }
 }

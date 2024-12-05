@@ -2,6 +2,10 @@ package xyz.ronella.git.pr.cloner.desktop.controller;
 
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
+import xyz.ronella.trivial.decorator.CloseableLock;
+
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Listener for changes in the focus state of the Git project directory TextField.
@@ -10,11 +14,14 @@ import javafx.beans.value.ObservableValue;
  * @author Ron Webb
  * @since 1.2.1
  */
+@SuppressWarnings({"PMD.AvoidUsingVolatile", "PMD.NonThreadSafeSingleton"})
 public class ProjectDirKeyTypeListener implements ChangeListener<Boolean> {
 
+    private final static Lock LOCK = new ReentrantLock();
+
     private final PRClonerController controller;
-    private static boolean IS_ATTACHED;
-    private static ProjectDirKeyTypeListener LISTENER;
+    private static boolean isAttached;
+    private static volatile ProjectDirKeyTypeListener listener;
 
     /**
      * Constructs a ProjectDirKeyTypeListener with the specified controller.
@@ -34,7 +41,8 @@ public class ProjectDirKeyTypeListener implements ChangeListener<Boolean> {
      * @param newValue The new value.
      */
     @Override
-    public void changed(ObservableValue<? extends Boolean> observable, Boolean oldValue, Boolean newValue) {
+    public void changed(final ObservableValue<? extends Boolean> observable, final Boolean oldValue,
+                        final Boolean newValue) {
         try {
             if (!newValue) {
                 controller.updateCBORemotes();
@@ -43,7 +51,7 @@ public class ProjectDirKeyTypeListener implements ChangeListener<Boolean> {
             controller.txtGitProjectDir.focusedProperty().removeListener(this);
         }
         finally {
-            IS_ATTACHED = false;
+            isAttached = false;
         }
     }
 
@@ -52,16 +60,21 @@ public class ProjectDirKeyTypeListener implements ChangeListener<Boolean> {
      *
      * @param controller The controller to be used for updating the ComboBox.
      */
-    public static void attachListener(PRClonerController controller) {
-        if (!IS_ATTACHED) {
+    @SuppressWarnings({"PMD.UnusedLocalVariable", "PMD.AvoidDeeplyNestedIfStmts"})
+    public static void attachListener(final PRClonerController controller) {
+        if (!isAttached) {
 
-            if (LISTENER==null) {
-                LISTENER = new ProjectDirKeyTypeListener(controller);
+            if (listener == null) {
+                try (var ___ = new CloseableLock(LOCK)) {
+                    if (listener ==null) {
+                        listener = new ProjectDirKeyTypeListener(controller);
+                    }
+                }
             }
 
-            controller.txtGitProjectDir.focusedProperty().addListener(LISTENER);
+            controller.txtGitProjectDir.focusedProperty().addListener(listener);
 
-            IS_ATTACHED = true;
+            isAttached = true;
         }
     }
 
@@ -70,11 +83,11 @@ public class ProjectDirKeyTypeListener implements ChangeListener<Boolean> {
      *
      * @param controller The controller to be used for updating the ComboBox.
      */
-    public static void detachListener(PRClonerController controller) {
-        if (IS_ATTACHED) {
-            controller.txtGitProjectDir.focusedProperty().removeListener(LISTENER);
+    public static void detachListener(final PRClonerController controller) {
+        if (isAttached) {
+            controller.txtGitProjectDir.focusedProperty().removeListener(listener);
 
-            IS_ATTACHED = false;
+            isAttached = false;
         }
     }
 }

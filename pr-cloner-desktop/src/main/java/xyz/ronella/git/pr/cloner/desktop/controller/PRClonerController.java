@@ -40,7 +40,7 @@ import java.util.*;
  * @author Ron Webb
  * @since 2019-10-18
  */
-@SuppressWarnings("PMD.UnusedPrivateMethod")
+@SuppressWarnings({"PMD.UnusedPrivateMethod","PMD.ExcessiveImports", "PMD.UnusedFormalParameter", "PMD.TooManyMethods"})
 public class PRClonerController implements Initializable {
 
     private final static LoggerPlus LOGGER_PLUS = new LoggerPlus(LoggerFactory.getLogger(PRClonerController.class));
@@ -49,7 +49,7 @@ public class PRClonerController implements Initializable {
      * The text field for the GIT project directory.
      */
     @FXML
-    TextField txtGitProjectDir;
+    /* default */ TextField txtGitProjectDir;
 
     @FXML
     private TextField txtPullRequest;
@@ -70,17 +70,19 @@ public class PRClonerController implements Initializable {
     private Menu mnuFile;
 
     /**
-     * Constructor for the PrClonerController class.
+     * Constructs a PRClonerController.
      */
-    public PRClonerController() {}
+    public PRClonerController() {
+        super();
+    }
 
     @FXML
-    private void mnuCloseAction(ActionEvent event) {
+    private void mnuCloseAction(final ActionEvent event) {
         closeApp();
     }
 
     @FXML
-    private void mnuOpenAction(ActionEvent event) {
+    private void mnuOpenAction(final ActionEvent event) {
         selectDirectoryAction();
         event.consume();
     }
@@ -104,22 +106,22 @@ public class PRClonerController implements Initializable {
     }
 
     private void selectDirectory() {
-        DirectoryChooser dirChooser = new DirectoryChooser();
+        final DirectoryChooser dirChooser = new DirectoryChooser();
         dirChooser.setTitle("Select a git project folder");
 
-        File file = dirChooser.showDialog(mainMenuBar.getScene().getWindow());
+        final File file = dirChooser.showDialog(mainMenuBar.getScene().getWindow());
         Optional.ofNullable(file).ifPresent( ___file -> {
             txtGitProjectDir.textProperty().setValue(___file.getAbsolutePath());
         });
     }
 
     private void closeApp() {
-        Stage stage = (Stage) mainMenuBar.getScene().getWindow();
+        final Stage stage = (Stage) mainMenuBar.getScene().getWindow();
         stage.close();
     }
 
-    private void showError(String errorText) {
-        Alert alert = new Alert(Alert.AlertType.ERROR);
+    private void showError(final String errorText) {
+        final Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setHeaderText(errorText);
         alert.showAndWait();
     }
@@ -163,6 +165,7 @@ public class PRClonerController implements Initializable {
         closeApp();
     }
     @FXML
+    @SuppressWarnings("PMD.DoNotUseThreads")
     private void btnCloneAction(ActionEvent event) {
         String errorText = null;
 
@@ -238,7 +241,7 @@ public class PRClonerController implements Initializable {
         }
     }
     @FXML
-    private void txtGitProjectDirMouseClicked(MouseEvent event) {
+    private void txtGitProjectDirMouseClicked(final MouseEvent event) {
         if (event.getButton().equals(MouseButton.PRIMARY) && event.getClickCount()==2) {
             selectDirectoryAction();
         }
@@ -248,17 +251,18 @@ public class PRClonerController implements Initializable {
     private void showInvalidGitDir() {
         cboRemotes.getItems().clear();
         cboRemotes.disableProperty().set(true);
-        Alert alert = new Alert(Alert.AlertType.ERROR);
+        final Alert alert = new Alert(Alert.AlertType.ERROR);
         alert.setHeaderText("Not a git project directory");
         alert.showAndWait();
     }
 
+    @SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
     private List<String> getRemotes() {
         final String projectDir = txtGitProjectDir.getText();
         final var remotes = new ArrayList<String>();
 
         try (var mLOG = LOGGER_PLUS.groupLog("runCommand")) {
-            Path gitDir = Paths.get(projectDir, ".git");
+            final Path gitDir = Paths.get(projectDir, ".git");
             if (gitDir.toFile().exists()) {
                 final var remoteBatch = PathFinder.getBuilder("remotes.bat")
                         .addPaths(getScriptDir()).build().getFile();
@@ -267,10 +271,10 @@ public class PRClonerController implements Initializable {
 
                     CommandProcessor.process(CommandProcessor.ProcessOutputHandler
                             .captureStreams((output, error) -> {
-                                try (BufferedReader br = new BufferedReader(
+                                try (BufferedReader reader = new BufferedReader(
                                         new InputStreamReader(output, StandardCharsets.UTF_8))
                                 ) {
-                                    remotes.addAll(br.lines().sorted(Comparator.naturalOrder()).toList());
+                                    remotes.addAll(reader.lines().sorted(Comparator.naturalOrder()).toList());
                                 } catch (IOException ioe) {
                                     mLOG.error(LOGGER_PLUS.getStackTraceAsString(ioe));
                                     throw new RuntimeException(ioe);
@@ -295,27 +299,27 @@ public class PRClonerController implements Initializable {
      */
     public void updateCBORemotes() {
         if (!txtGitProjectDir.getText().isEmpty()) {
-            List<String> remotes = getRemotes();
-            ObservableList<String> listItems = cboRemotes.getItems();
+            final List<String> remotes = getRemotes();
+            final ObservableList<String> listItems = cboRemotes.getItems();
             listItems.clear();
-            if (!remotes.isEmpty()) {
+            if (remotes.isEmpty()) {
+                cboRemotes.editableProperty().set(true);
+            } else {
                 listItems.addAll(remotes.stream().toList());
                 cboRemotes.disableProperty().set(false);
-            } else {
-                cboRemotes.editableProperty().set(true);
             }
         }
     }
 
     @FXML
-    private void txtGitProjectDirAction(ActionEvent event) {
+    private void txtGitProjectDirAction(final ActionEvent event) {
         ProjectDirKeyTypeListener.detachListener(this);
         updateCBORemotes();
         event.consume();
     }
 
     @FXML
-    private void txtGitProjectDirKeyTyped(KeyEvent event) {
+    private void txtGitProjectDirKeyTyped(final KeyEvent event) {
         ProjectDirKeyTypeListener.attachListener(this);
         event.consume();
     }

@@ -22,15 +22,16 @@ final public class PRConfig {
      */
     public final static PRConfig INSTANCE = new PRConfig();
 
-    private ResourceBundle prop;
+    private final ResourceBundle prop;
 
     /**
      * Private constructor to initialize the configuration.
      * Loads properties from the 'pr-cloner.properties' file located in either '../conf' or 'conf' directories.
      */
+    @SuppressWarnings({"PMD.AvoidFileStream", "PMD.AvoidThrowingRawExceptionTypes"})
     private PRConfig() {
-        final LoggerPlus LOGGER_PLUS = new LoggerPlus(LoggerFactory.getLogger(PRConfig.class));
-        try(var mLOG = LOGGER_PLUS.groupLog("PRConfig")) {
+        final LoggerPlus logger = new LoggerPlus(LoggerFactory.getLogger(PRConfig.class));
+        try(var mLOG = logger.groupLog("PRConfig")) {
             try {
                 final var confName = "pr-cloner.properties";
                 final var locations = List.of("../conf", "conf");
@@ -44,7 +45,7 @@ final public class PRConfig {
                     this.prop = new PropertyResourceBundle(versionProp);
                 }
             } catch (IOException exp) {
-                mLOG.error(()-> LOGGER_PLUS.getStackTraceAsString(exp));
+                mLOG.error(()-> logger.getStackTraceAsString(exp));
                 throw new RuntimeException(exp);
             }
         }

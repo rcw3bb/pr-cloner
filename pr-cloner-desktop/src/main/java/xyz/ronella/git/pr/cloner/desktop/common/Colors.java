@@ -8,8 +8,6 @@ package xyz.ronella.git.pr.cloner.desktop.common;
  */
 final public class Colors {
 
-    private Colors() {}
-
     /**
      * The color of success.
      */
@@ -24,5 +22,7 @@ final public class Colors {
      * The color of processing.
      */
     public static final String LIGHT_AMBER = "#DAA520";
+
+    private Colors() {}
 
 }

@@ -13,9 +13,11 @@ import java.util.function.Supplier;
 public class ApplicationTitle implements Supplier<String> {
 
     /**
-     * Constructor for the ApplicationTitle class.
+     * Constructor for ApplicationTitle.
      */
-    public ApplicationTitle() {}
+    public ApplicationTitle() {
+        super();
+    }
 
     /**
      * Generates the application title.

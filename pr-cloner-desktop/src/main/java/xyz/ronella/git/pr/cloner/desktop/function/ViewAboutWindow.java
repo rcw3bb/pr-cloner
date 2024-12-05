@@ -23,9 +23,11 @@ public class ViewAboutWindow implements Consumer<Window> {
     private final static LoggerPlus LOGGER_PLUS = new LoggerPlus(LoggerFactory.getLogger(ViewAboutWindow.class));
 
     /**
-     * Constructor for the ViewAboutWindow class.
+     * Constructs a ViewAboutWindow.
      */
-    public ViewAboutWindow() {}
+    public ViewAboutWindow() {
+        super();
+    }
 
     /**
      * Displays the About window when the accept method is called.
@@ -33,17 +35,17 @@ public class ViewAboutWindow implements Consumer<Window> {
      * @param window The parent window from which the About window is displayed.
      */
     @Override
-    public void accept(Window window) {
+    public void accept(final Window window) {
         try(var mLOG = LOGGER_PLUS.groupLog("accept")) {
             mLOG.debug(() -> "Display about window.");
-            Stage parentStage = (Stage) window;
-            FXMLLoader loader = new FXMLLoader(Thread.currentThread().getContextClassLoader().getResource("about.fxml"));
-            Parent root = loader.load();
-            Stage stage = new Stage();
+            final Stage parentStage = (Stage) window;
+            final FXMLLoader loader = new FXMLLoader(Thread.currentThread().getContextClassLoader().getResource("about.fxml"));
+            final Parent root = loader.load();
+            final Stage stage = new Stage();
             stage.getIcons().add(Images.ICON);
             stage.initOwner(parentStage);
             stage.setTitle(Invoker.generate(new ApplicationTitle()));
-            Scene scene = new Scene(root);
+            final Scene scene = new Scene(root);
             stage.setScene(scene);
             stage.setResizable(false);
             stage.initModality(Modality.WINDOW_MODAL);

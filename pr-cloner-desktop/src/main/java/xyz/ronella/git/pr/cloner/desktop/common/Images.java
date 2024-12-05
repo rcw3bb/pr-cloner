@@ -14,13 +14,13 @@ public final class Images {
     // The file name of the icon image.
     private static final String ICON_FILE = "icon.png";
 
-    // Private constructor to prevent instantiation.
-    private Images() {
-    }
-
     /**
      * The icon image loaded from the resources.
      * This image is loaded using the context class loader of the current thread.
      */
     public static final Image ICON = new Image(Objects.requireNonNull(Thread.currentThread().getContextClassLoader().getResourceAsStream(ICON_FILE)));
+
+    // Private constructor to prevent instantiation.
+    private Images() {}
+
 }

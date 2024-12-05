@@ -18,13 +18,14 @@ final public class AppInfo {
 
     private static final LoggerPlus LOGGER = new LoggerPlus(LoggerFactory.getLogger(AppInfo.class));
     private static final String CONFIG_FILE = "app-info.properties";
-    private transient ResourceBundle prop = null;
+    private transient ResourceBundle prop;
 
     /**
      * The INSTANCE is the singleton instance of the AppInfo class.
      */
     public static final AppInfo INSTANCE = new AppInfo();
 
+    @SuppressWarnings("PMD.AvoidThrowingRawExceptionTypes")
     private AppInfo() {
         try {
             final var appInfoFile = PathFinder.getBuilder(CONFIG_FILE)

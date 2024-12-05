@@ -2,9 +2,12 @@ package xyz.ronella.git.pr.cloner.desktop.controller;
 
 import org.slf4j.LoggerFactory;
 import xyz.ronella.logging.LoggerPlus;
+import xyz.ronella.trivial.decorator.CloseableLock;
 
 import java.io.*;
 import java.nio.file.Paths;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Holds a serializable state of pr cloner.
@@ -12,6 +15,7 @@ import java.nio.file.Paths;
  * @author Ron Webb
  * @since 1.2.0
  */
+@SuppressWarnings({"PMD.AvoidUsingVolatile", "PMD.NonThreadSafeSingleton"})
 public final class PRClonerState implements Serializable {
 
     @Serial
@@ -19,18 +23,35 @@ public final class PRClonerState implements Serializable {
     private final static LoggerPlus LOGGER_PLUS = new LoggerPlus(LoggerFactory.getLogger(PRClonerState.class));
     private static final String STATE_DIR = "state";
     private static final String FILENAME = "PRClonerState.obj";
-    private static PRClonerState STATE;
+    private static final Lock LOCK = new ReentrantLock();
+    private static volatile PRClonerState state;
+
+
+    /**
+     * The directory chosen.
+     */
+    private String directory;
+
+    /**
+     * The remote selected.
+     */
+    private String remote;
 
     /**
      * The only method that can create an instance of PRClonerState.
      * @return An instance of PRClonerState.
      */
+    @SuppressWarnings("PMD.UnusedLocalVariable")
     public static PRClonerState getInstance() {
-        if (STATE==null) {
-            STATE = new PRClonerState();
+        if (state == null) {
+            try (var ___ = new CloseableLock(LOCK)) {
+                if (state == null) {
+                    state = new PRClonerState();
+                }
+            }
         }
 
-        return STATE;
+        return state;
     }
 
     /**
@@ -57,17 +78,6 @@ public final class PRClonerState implements Serializable {
     }
 
     private PRClonerState() {}
-
-    /**
-     * The directory chosen.
-     */
-    private String directory;
-
-    /**
-     * The remote selected.
-     */
-    private String remote;
-
     /**
      * Retrieves the directory.
      *
@@ -91,7 +101,7 @@ public final class PRClonerState implements Serializable {
      *
      * @param directory The directory.
      */
-    public void setDirectory(String directory) {
+    public void setDirectory(final String directory) {
         this.directory = directory;
     }
 
@@ -100,13 +110,14 @@ public final class PRClonerState implements Serializable {
      *
      * @param remote The remote.
      */
-    public void setRemote(String remote) {
+    public void setRemote(final String remote) {
         this.remote = remote;
     }
 
     /**
      * Saves the current state to a file.
      */
+    @SuppressWarnings({"PMD.AvoidFileStream", "PMD.AvoidThrowingRawExceptionTypes"})
     public void save() {
         final var filename = getStateFile();
         try(var mLOG = LOGGER_PLUS.groupLog("save")) {
@@ -123,6 +134,7 @@ public final class PRClonerState implements Serializable {
     /**
      * Restores the state from a file.
      */
+    @SuppressWarnings({"PMD.AvoidFileStream", "PMD.AvoidThrowingRawExceptionTypes"})
     public void restore() {
         final var filename = getStateFile();
         try(var mLOG = LOGGER_PLUS.groupLog("restore")) {

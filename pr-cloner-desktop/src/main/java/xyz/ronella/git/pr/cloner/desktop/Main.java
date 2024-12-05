@@ -33,7 +33,6 @@ public class Main extends Application {
         if (optLogFile.isPresent()) {
             final var logSysProp = "logback.configurationFile";
             final var logFile = optLogFile.get().getAbsolutePath();
-            System.out.printf("%s: %s%n", logSysProp, logFile);
             System.setProperty(logSysProp, logFile);
         }
     }
@@ -42,18 +41,20 @@ public class Main extends Application {
     private final static LoggerPlus LOGGER = new LoggerPlus(LoggerFactory.getLogger(Main.class));
 
     /**
-     * Constructor for the Main class.
+     * The constructor.
      */
-    public Main() {}
+    public Main() {
+        super();
+    }
 
     @Override
-    public void start(Stage primaryStage) throws Exception {
-        FXMLLoader loader = new FXMLLoader(Thread.currentThread().getContextClassLoader().getResource(MAIN_UI_FILE));
-        Parent root = loader.load();
+    public void start(final Stage primaryStage) throws Exception {
+        final FXMLLoader loader = new FXMLLoader(Thread.currentThread().getContextClassLoader().getResource(MAIN_UI_FILE));
+        final Parent root = loader.load();
         primaryStage.getIcons().add(Images.ICON);
         primaryStage.setTitle(Invoker.generate(new ApplicationTitle()));
         primaryStage.setResizable(false);
-        Scene scene = new Scene(root);
+        final Scene scene = new Scene(root);
         primaryStage.setScene(scene);
         primaryStage.show();
     }
@@ -62,7 +63,7 @@ public class Main extends Application {
      * The application entry point.
      * @param args The command line arguments.
      */
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
         try (var mLOG = LOGGER.groupLog("main")) {
             final var appInfo = AppInfo.INSTANCE;
             final var header = String.format("%s v%s (%s)"

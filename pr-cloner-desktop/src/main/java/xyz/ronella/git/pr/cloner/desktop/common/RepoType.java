@@ -28,7 +28,7 @@ public enum RepoType {
      * @param name   The name of the repository type.
      * @param script The script associated with the repository type.
      */
-    RepoType(String name, String script) {
+    RepoType(final String name, final String script) {
         this.name = name;
         this.script = script;
     }
@@ -59,8 +59,8 @@ public enum RepoType {
      * @throws IllegalArgumentException if the specified repoType does not match any enum value.
      */
     public static RepoType getEnum(final String repoType) {
-        final var ALL_CAPS_REPOTYPE = repoType.toUpperCase(Locale.ROOT);
-        return RepoType.valueOf(ALL_CAPS_REPOTYPE);
+        final var allCapsRepoType = repoType.toUpperCase(Locale.ROOT);
+        return RepoType.valueOf(allCapsRepoType);
     }
 
 }
