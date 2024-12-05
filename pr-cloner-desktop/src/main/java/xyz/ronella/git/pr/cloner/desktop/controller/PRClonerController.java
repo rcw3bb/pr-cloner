@@ -261,7 +261,7 @@ public class PRClonerController implements Initializable {
         final String projectDir = txtGitProjectDir.getText();
         final var remotes = new ArrayList<String>();
 
-        try (var mLOG = LOGGER_PLUS.groupLog("runCommand")) {
+        try (var mLOG = LOGGER_PLUS.groupLog("getRemotes")) {
             final Path gitDir = Paths.get(projectDir, ".git");
             if (gitDir.toFile().exists()) {
                 final var remoteBatch = PathFinder.getBuilder("remotes.bat")
@@ -304,6 +304,10 @@ public class PRClonerController implements Initializable {
             listItems.clear();
             if (remotes.isEmpty()) {
                 cboRemotes.editableProperty().set(true);
+                cboRemotes.setValue(null);
+                txtPullRequest.setStyle(null);
+                txtPullRequest.setText("");
+                saveState();
             } else {
                 listItems.addAll(remotes.stream().toList());
                 cboRemotes.disableProperty().set(false);
@@ -345,6 +349,11 @@ public class PRClonerController implements Initializable {
         });
 
         restoreState();
+
+        if (cboRemotes.getValue()!=null) {
+            cboRemotes.getItems().addAll(getRemotes());
+            cboRemotes.disableProperty().set(false);
+        }
     }
 
 }
