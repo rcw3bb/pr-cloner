@@ -132,13 +132,13 @@ public class PRClonerController implements Initializable {
     private void showSuccess() {
         try(var mLOG = LOGGER_PLUS.groupLog("showSuccess")) {
             txtPullRequest.setStyle(calcTextBackground(Colors.LIGHT_GREEN));
-            mLOG.debug("Cloning successful.");
+            mLOG.info("Cloning successful.");
         }
     }
     private void showNoSuccess() {
         try(var mLOG = LOGGER_PLUS.groupLog("showNoSuccess")) {
             txtPullRequest.setStyle(calcTextBackground(Colors.LIGHT_RED));
-            mLOG.debug("Cloning failed.");
+            mLOG.info("Cloning failed.");
         }
     }
 
@@ -164,6 +164,7 @@ public class PRClonerController implements Initializable {
     private void btnCloseAction(ActionEvent event) {
         closeApp();
     }
+
     @FXML
     @SuppressWarnings("PMD.DoNotUseThreads")
     private void btnCloneAction(ActionEvent event) {
@@ -212,8 +213,11 @@ public class PRClonerController implements Initializable {
 
             final var commandArray = CommandArray.getBuilder()
                     .setCommand(command.getAbsolutePath())
-                    .addArgs(List.of(txtGitProjectDir.getText(), cboRemotes.getValue(),txtPullRequest.getText()))
+                    .addArgs(List.of(txtGitProjectDir.getText(), cboRemotes.getValue(), txtPullRequest.getText()))
                     .build();
+
+            mLOG.info("Project [%s] Remote [%s] PR [%s]", txtGitProjectDir.getText(), cboRemotes.getValue(),
+                    txtPullRequest.getText());
 
             mLOG.debug(()-> String.join(" ", commandArray.getCommand()));
 
